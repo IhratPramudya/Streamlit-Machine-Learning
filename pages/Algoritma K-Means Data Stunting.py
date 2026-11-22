@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -7,22 +8,51 @@ from sklearn.metrics import silhouette_score
 from sklearn.cluster import KMeans
 from yellowbrick.cluster import SilhouetteVisualizer
 
-st.title("Upload Dataset")
-data_file = st.file_uploader(("Silahkan Upload"), type=["xlsx"])
+TEMPLATE_PATH = os.path.join("files", "template_data.xlsx")
 
+st.subheader("Pilih Sumber Data")
 
-if data_file is not None:
-    file_detail = {
-        "file_name": data_file.name,
-        "file_type": data_file.type,
-        "file_size": data_file.size
-    }
+sumber = st.radio(
+    "Gunakan data dari:",
+    ["Data template", "Upload file sendiri"],
+    horizontal=True
+)
 
-    st.write(file_detail)
-    df = pd.read_excel(data_file, engine='openpyxl')
+df = None
 
+# ===== PERUBAHAN: ambil data dari template atau upload =====
+if sumber == "Data template":
+    if os.path.exists(TEMPLATE_PATH):
+        df = pd.read_excel(TEMPLATE_PATH, engine='openpyxl')
+        st.success(f"Memakai data template: {os.path.basename(TEMPLATE_PATH)}")
 
-    
+        with open(TEMPLATE_PATH, "rb") as f:
+            st.download_button(
+                "Download template",
+                data=f,
+                file_name="template_data.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+    else:
+        st.error(f"File template tidak ditemukan di: {TEMPLATE_PATH}")
+else:
+    data_file = st.file_uploader("Upload file Excel", type=["xlsx"])
+    if data_file is not None:
+        file_detail = {
+            "file_name": data_file.name,
+            "file_type": data_file.type,
+            "file_size": data_file.size
+        }
+        st.write(file_detail)
+        df = pd.read_excel(data_file, engine='openpyxl')
+# ===== AKHIR PERUBAHAN =====
+
+if df is not None:   # sebelumnya: if data_file is not None:
+
+    # Didefinisikan di sini supaya tidak error saat jenis plot bukan Scatter
+    numeric_cols = df.select_dtypes(include=['number'])
+    string_cols = df.select_dtypes(include=['object'])
+
     st.dataframe(df, use_container_width=True)
     st.title("Pengumpulan Data")
     st.sidebar.title("Pengumpulan Data")
@@ -166,5 +196,4 @@ if data_file is not None:
         st.write("Jenis error:", type(e))
         st.write("Pesan error:", e)
 else:
-    st.write("Silahkan Upload Data untuk menjalankan model")
-
+    st.write("Silahkan pilih data template atau upload data untuk menjalankan model")
