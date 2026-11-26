@@ -15,10 +15,6 @@ col1,col2,col3=st.columns([2,2,2])
 
 with col1:
     st.image('files/WhatsApp Image 2024-07-03 at 08.52.21_62e4c07a.jpg',width=100,use_column_width='never')
-with col2:
-    st.image('files/image.png',width=100,use_column_width='never')
-with col3:
-    st.image('files/vivien.png',width=100,use_column_width='never')
 
 # Displaying Multiple images with width 150
 # Displaying Multiple images with width 150
